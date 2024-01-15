@@ -1,0 +1,2 @@
+  - command: mv govc /usr/bin
+  - command: chmod +x /usr/bin/govc

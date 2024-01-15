@@ -1,0 +1,15 @@
+content_library_main:
+  name: 00-main
+  vm_name: 
+  description: used to deploy linux ovf templates
+  publish_info:
+      published: true
+      authentication_method: NONE
+  storage_backings:
+  - datastore_id: "{{ lookup('vmware.vmware_rest.datastore_moid', '/TNDC/datastore/cloud') }}"
+    type: DATASTORE
+  content_library_subscriber:
+    name: 01-secondary
+  storage_backings:
+  - datastore_id: "{{ lookup('vmware.vmware_rest.datastore_moid', '/TNDC/datastore/cloud') }}"
+    type: DATASTORE

@@ -1,0 +1,39 @@
+- hosts: all
+  gather_facts: 0
+  roles:
+  - role: content_libraries
+    tag: create_main
+    vars:
+      content_library_main:
+      - name: 00-main
+        vm_name: 
+        description: used to deploy linux ovf templates
+        publish_info:
+            published: true
+            authentication_method: NONE
+        storage_backings:
+        - datastore_id: "{{ lookup('vmware.vmware_rest.datastore_moid', '/TNDC/datastore/cloud') }}"
+          type: DATASTORE      
+  - role: hosts
+    tags: create_host
+    vars:
+        satellite_hosts:
+        - name: 'autobuildrh8.lou.land'
+          hostgroup: 00-Template-Maker/RH8-Template-Maker
+          organization: hallas
+          location: hallas
+          state: present 
+          build: True
+          pxe_loader: Grub2 UEFI
+          provision_method: bootdisk
+          parameters:
+          - name: 'package_update'
+            value: false
+          interfaces_attributes:
+          - type: "interface"
+            provision: true
+            primary: true
+            managed: true
+            subnet: "192.168.2.0"
+            ip: "192.168.2.58"
+  - role: content_libraries
