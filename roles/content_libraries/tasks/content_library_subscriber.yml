@@ -4,10 +4,10 @@
     vcenter_username: "{{ vcenter_username | default(omit) }}"
     vcenter_password: "{{ vcenter_password | default(omit) }}"
     vcenter_validate_certs: "{{ vcenter_validate_certs | default(omit) }}"
-    id:                 "{{ library.id | default(omit) }}"
+    #id:                 "{{ library.id | default(omit) }}"
     type:               "{{ library.type | default(omit) }}"
     name:               "{{ library.name }}"
-    state:              "{{ library.state   | default(omit) }}"
+    state:              "{{ library.state   | default('present') }}"
     version:            "{{ library.version | default(omit) }}"
     library_id:         "{{ library.library_id     | default(omit) }}"
     server_guid:        "{{ library.server_guid    | default(omit) }}"
@@ -39,4 +39,5 @@
     name: "{{ library.name }}"
     library_id: '{{ sub_lib.id }}'
     state: sync
+  when: item.state | lower == 'present'
   delegate_to: localhost

@@ -1,18 +1,24 @@
-- hosts: all
+- hosts: localhost
   gather_facts: 0
+  vars:
+    satellite_hostname: satellite.lou.land
+    satellite_server_url: https://satellite.lou.land
+    satellite_username: admin
+    satellite_password: redhat
+    satellite_validate_certs: false #"{{ validate_certs | default('true') }}"
   roles:
   - role: content_libraries
-    tag: create_main
+    tags: create_main
     vars:
       content_library_main:
       - name: 00-main
-        vm_name: 
+        state: present
         description: used to deploy linux ovf templates
         publish_info:
             published: true
             authentication_method: NONE
         storage_backings:
-        - datastore_id: "{{ lookup('vmware.vmware_rest.datastore_moid', '/TNDC/datastore/cloud') }}"
+        - datastore_id: 'datastore-17' #{{ lookup('vmware.vmware_rest.datastore_moid', '/TNDC/datastore/cloud') }}"
           type: DATASTORE      
   - role: hosts
     tags: create_host
@@ -29,6 +35,8 @@
           parameters:
           - name: 'package_update'
             value: false
+          - name: disa_stig
+            value: false
           interfaces_attributes:
           - type: "interface"
             provision: true
@@ -36,4 +44,30 @@
             managed: true
             subnet: "192.168.2.0"
             ip: "192.168.2.58"
+        - name: 'autobuildrh7.lou.land'
+          hostgroup: 00-Template-Maker/RH7-Template-Maker
+          organization: hallas
+          location: hallas
+          state: present 
+          build: True
+          pxe_loader: Grub2 UEFI
+          provision_method: bootdisk
+          parameters:
+          - name: 'package_update'
+            value: false
+          - name: disa_stig
+            value: false
+          interfaces_attributes:
+          - type: "interface"
+            provision: true
+            primary: true
+            managed: true
+            subnet: "192.168.2.0"
+            ip: "192.168.2.57"
+- hosts: localhost
+  gather_facts: 0
+  vars_files:
+  - vars/content_libraries.yml
+  roles:
   - role: content_libraries
+    tags: create_subs

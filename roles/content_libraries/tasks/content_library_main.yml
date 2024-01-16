@@ -6,8 +6,8 @@
     vcenter_validate_certs: "{{ vcenter_validate_certs | default(omit) }}"
     id:                 "{{ item.id   | default(omit) }}"
     type:               "{{ item.type | default(omit) }}"
-    name:               "{{ item.name }}"
-    state:              "{{ item.state   | default(omit) }}"
+    name:               "{{ item.name | default(omit) }}"
+    state:              "{{ item.state   }}"
     version:            "{{ item.version | default(omit) }}"
     library_id:         "{{ item.library_id     | default(omit) }}"
     server_guid:        "{{ item.server_guid    | default(omit) }}"
@@ -26,20 +26,27 @@
     client_token:             "{{ item.client_token  | default(omit) }}"
     creation_time:            "{{ item.creation_time | default(omit) }}"
     library_id:               "{{ item.library_id    | default(omit) }}"
-  delegate_to: localhost
-  register: primary_content_library_info
+  register: primary_content_library
 
-- set_fact:
-    subscription_info:
-      subscription_url: "{{ primary_content_library_info.value['publish_info']['publish_url'] }}"
-      authentication_method: NONE
-      on_demand: true
-      automatic_sync_enabled: true
-    library_id: "{{ primary_content_library_info.value.id }}"
+- block:
+  - name: grab content library info
+    vmware.vmware_rest.content_locallibrary_info:
+      library_id: "{{ primary_content_library['id'] }}"
+    register: primary_content_library_info
+
+  - set_fact:
+      subscription_info:
+        subscription_url: "{{ primary_content_library_info['value']['publish_info']['publish_url'] }}"
+        authentication_method: NONE
+        on_demand: true
+        automatic_sync_enabled: true
+      library_id: "{{ primary_content_library_info['value'].id }}"
+  when: item.state | lower == 'present'
 
 - include_tasks: content_library_subscriber.yml
   with_items: "{{ item.content_library_subscriber }}"
   loop_control:
     loop_var: library
+  when: run
   vars:
     run: "{{ (item.content_library_subscriber is defined) | ternary(true, false)}}"

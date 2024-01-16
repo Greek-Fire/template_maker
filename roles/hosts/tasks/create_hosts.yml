@@ -79,7 +79,7 @@
     delegate_to: localhost
     register: vm_power_state
     until: vm_power_state.value.state == "POWERED_OFF"
-    retries: 30 
+    retries: 90 
     delay: 30
     when: vm_power_state.value.state != "POWERED_OFF"
 
@@ -139,7 +139,7 @@
       target:
         library_id: '{{ library_id}}'
       create_spec:
-        name: "{{ template_name }}"
+        name: "{{ template_name | default(item.name) }}"
         description: an OVF example
         flags: []
       state: present
